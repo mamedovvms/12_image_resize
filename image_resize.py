@@ -22,7 +22,8 @@ def resize_image(path_to_original, path_to_result, width, height):
                                         path_to_result, result_images)
     result_images.save(path_to_result)
 
-    return original_width/original_height == width/height
+    if not original_width/original_height == width/height:
+        print('Пропорции не сохранены')
 
 
 def scaling_image(path_to_original, path_to_result,
@@ -73,10 +74,7 @@ def main():
 
     try:
         if width and height:
-            proportions_preserved = resize_image(path_to_original,
-                                                 path_to_result, width, height)
-            if not proportions_preserved:
-                print('Пропорции не сохранены')
+            resize_image(path_to_original, path_to_result, width, height)
         else:
             scaling_image(path_to_original, path_to_result, width, height, scale)
     except OSError:
