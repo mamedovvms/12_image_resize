@@ -5,7 +5,7 @@ import os
 
 def get_path_to_result(path_to_original, path_to_result, result_images):
     if path_to_result:
-        dir_to_result = os.path.dirname()
+        dir_to_result = os.path.dirname(path_to_result)
         if os.path.isdir(dir_to_result):
             return path_to_result
 
@@ -52,6 +52,7 @@ def scaling_image(original_image, width=None, height=None, scale=None):
     original_image.thumbnail(supposed_new_size)
     return original_image
 
+
 def get_cons_params():
     parser = argparse.ArgumentParser(description='Resize image')
     parser.add_argument('path_file', help='Path to the image file')
@@ -76,9 +77,9 @@ def main():
     if not(scale or width or height):
         exit('Не заполнен не один из параметров размера и масштаба')
 
-    #for param in (width, height, scale):
-    #    if param < 0:
-    #        exit('Параметр не может быть меньше нуля')
+    for param in (width, height, scale):
+        if param and param < 0:
+            exit('Параметр не может быть меньше нуля')
 
     try:
         proportions_saved = resize_image(path_to_original, path_to_result, width, height, scale)
