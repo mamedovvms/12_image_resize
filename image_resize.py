@@ -5,7 +5,9 @@ import os
 
 def get_path_to_result(path_to_original, path_to_result, result_images):
     if path_to_result:
-        return path_to_result
+        dir_to_result = os.path.dirname()
+        if os.path.isdir(dir_to_result):
+            return path_to_result
 
     new_width, new_height = result_images.size
     root, ext = os.path.splitext(path_to_original)
@@ -13,24 +15,30 @@ def get_path_to_result(path_to_original, path_to_result, result_images):
     return '{}__{}x{}{}'.format(root, new_width, new_height, ext)
 
 
-def resize_image(path_to_original, path_to_result, width, height):
+def resize_image(path_to_original, path_to_result,
+                 width=None, height=None, scale=None):
 
-    original_images = Image.open(path_to_original)
-    original_width, original_height = original_images.size
-    result_images = original_images.resize((width, height))
+    original_image = Image.open(path_to_original)
+    proportions_saved = True
+    if width and height:
+        result_image = original_image.resize((width, height))
+        original_width, original_height = original_image.size
+        proportions_saved = original_width/original_height == width/height
+    else:
+        result_image = scaling_image(original_image, width, height, scale)
+
     path_to_result = get_path_to_result(path_to_original,
-                                        path_to_result, result_images)
-    result_images.save(path_to_result)
+                                        path_to_result, result_image)
 
-    if not original_width/original_height == width/height:
-        print('Пропорции не сохранены')
+    result_image.save(path_to_result)
+
+    return proportions_saved
 
 
-def scaling_image(path_to_original, path_to_result,
-                  width=None, height=None, scale=None):
+def scaling_image(original_image, width=None, height=None, scale=None):
 
-    original_images = Image.open(path_to_original)
-    original_width, original_height = original_images.size
+    original_width, original_height = original_image.size
+
     if scale:
         supposed_new_size = (
             int(original_width * scale),
@@ -41,11 +49,8 @@ def scaling_image(path_to_original, path_to_result,
     else:
         supposed_new_size = (original_width, height)
 
-    original_images.thumbnail(supposed_new_size)
-    path_to_result = get_path_to_result(path_to_original,
-                                        path_to_result, original_images)
-    original_images.save(path_to_result)
-
+    original_image.thumbnail(supposed_new_size)
+    return original_image
 
 def get_cons_params():
     parser = argparse.ArgumentParser(description='Resize image')
@@ -67,18 +72,22 @@ def main():
 
     if scale and (width or height):
         exit('Параметры ширина и высота не задаются с параметром масштаб')
+
     if not(scale or width or height):
         exit('Не заполнен не один из параметров размера и масштаба')
-    if scale < 0:
-        exit('Масштаб не может быть меньше нуля')
+
+    #for param in (width, height, scale):
+    #    if param < 0:
+    #        exit('Параметр не может быть меньше нуля')
 
     try:
-        if width and height:
-            resize_image(path_to_original, path_to_result, width, height)
-        else:
-            scaling_image(path_to_original, path_to_result, width, height, scale)
+        proportions_saved = resize_image(path_to_original, path_to_result, width, height, scale)
     except OSError:
         print('Файл не является картинкой')
+
+    if not proportions_saved:
+        print('Пропорции изображения изменены')
+
 
 if __name__ == '__main__':
     main()
