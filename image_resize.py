@@ -5,9 +5,7 @@ import os
 
 def get_path_to_result(path_to_original, path_to_result, result_images):
     if path_to_result:
-        dir_to_result = os.path.dirname(path_to_result)
-        if os.path.isdir(dir_to_result):
-            return path_to_result
+        return path_to_result
 
     new_width, new_height = result_images.size
     root, ext = os.path.splitext(path_to_original)
@@ -53,6 +51,24 @@ def scaling_image(original_image, width=None, height=None, scale=None):
     return original_image
 
 
+def check_validity_params(path_to_result, width, height, scale):
+
+    if not all(value > 0 for value in [width, height, scale] if value):
+        exit('Параметр не может быть отрицательным числом')
+
+    if scale and (width or height):
+        exit('Параметры ширина и высота не задаются с параметром масштаб')
+
+    if not (scale or width or height):
+        exit('Не заполнен не один из параметров для '
+             'изменения размера изображения')
+
+    if path_to_result:
+        dir_to_result = os.path.dirname(path_to_result)
+        if not os.path.isdir(dir_to_result):
+            exit('Пусть к файлу рузельтата задан не верно')
+
+
 def get_cons_params():
     parser = argparse.ArgumentParser(description='Resize image')
     parser.add_argument('path_file', help='Path to the image file')
@@ -70,14 +86,11 @@ def main():
     width = params.width
     height = params.height
     scale = params.scale
-
-    if scale and (width or height):
-        exit('Параметры ширина и высота не задаются с параметром масштаб')
-    elif not(scale or width or height):
-        exit('Не заполнен не один из параметров размера и масштаба')
+    check_validity_params(path_to_result, width, height, scale)
 
     try:
-        proportions_saved = resize_image(path_to_original, path_to_result, width, height, scale)
+        proportions_saved = resize_image(path_to_original, path_to_result,
+                                         width, height, scale)
     except OSError:
         print('Файл не является картинкой')
 
