@@ -73,14 +73,12 @@ def main():
 
     if scale and (width or height):
         exit('Параметры ширина и высота не задаются с параметром масштаб')
-
-    if not(scale or width or height):
+    elif not(scale or width or height):
         exit('Не заполнен не один из параметров размера и масштаба')
 
     for param in (width, height, scale):
         if param and param < 0:
             exit('Параметр не может быть меньше нуля')
-
     try:
         proportions_saved = resize_image(path_to_original, path_to_result, width, height, scale)
     except OSError:
