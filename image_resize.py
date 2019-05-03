@@ -3,55 +3,70 @@ from PIL import Image
 import os
 
 
-def get_path_to_result(path_to_original, path_to_result, result_images):
-    if path_to_result:
-        return path_to_result
+def get_path_to_result(path_to_original, dir_to_result, width, height):
 
-    new_width, new_height = result_images.size
-    root, ext = os.path.splitext(path_to_original)
+    old_dir, old_file = os.path.split(path_to_original)
+    old_name, ext = os.path.splitext(old_file)
+    new_name = '{}__{}x{}{}'.format(old_name, width, height, ext)
 
-    return '{}__{}x{}{}'.format(root, new_width, new_height, ext)
-
-
-def resize_image(path_to_original, path_to_result,
-                 width=None, height=None, scale=None):
-
-    original_image = Image.open(path_to_original)
-    proportions_saved = True
-    if width and height:
-        result_image = original_image.resize((width, height))
-        original_width, original_height = original_image.size
-        proportions_saved = original_width/original_height == width/height
+    if dir_to_result:
+        new_dir = dir_to_result
     else:
-        result_image = scaling_image(original_image, width, height, scale)
+        new_dir = old_dir
 
-    path_to_result = get_path_to_result(path_to_original,
-                                        path_to_result, result_image)
-
-    result_image.save(path_to_result)
-
-    return proportions_saved
+    return os.path.join(new_dir, new_name)
 
 
-def scaling_image(original_image, width=None, height=None, scale=None):
+def open_image(path_to_original):
+    try:
+        original_image = Image.open(path_to_original)
+    except OSError:
+        exit('Не удалось открыть файл')
+    return original_image
+
+
+def save_image(result_image, path_to_result):
+
+    try:
+        result_image.save(path_to_result)
+    except:
+        exit('Не удалось записать файл')
+
+
+def get_ration_changes(original_size, new_size):
+    ratio = (new_size / float(original_size))
+    return ratio
+
+
+def resize_image(original_image, width=None, height=None, scale=None):
 
     original_width, original_height = original_image.size
-
-    if scale:
-        supposed_new_size = (
+    if width and height:
+        new_size = (width, height)
+    elif scale:
+        new_size = (
             int(original_width * scale),
             int(original_height * scale)
         )
     elif width:
-        supposed_new_size = (width, original_height)
+        ratio = get_ration_changes(original_width, width)
+        new_size = (width, int(original_height * ratio))
     else:
-        supposed_new_size = (original_width, height)
+        ratio = get_ration_changes(original_height, height)
+        new_size = (int(original_width * ratio), height)
 
-    original_image.thumbnail(supposed_new_size)
-    return original_image
+    return original_image.resize(new_size)
 
 
-def check_validity_params(path_to_result, width, height, scale):
+def compare_images_proportions(width_one, height_one, width_two,
+                               height_two, delta):
+    if abs(width_one/height_one - width_two/height_two) <= delta:
+        return True
+    else:
+        return False
+
+
+def check_validity_params(dir_to_result, width, height, scale):
 
     if not all(value > 0 for value in [width, height, scale] if value):
         exit('Параметр не может быть отрицательным числом')
@@ -63,38 +78,52 @@ def check_validity_params(path_to_result, width, height, scale):
         exit('Не заполнен не один из параметров для '
              'изменения размера изображения')
 
-    if path_to_result:
-        dir_to_result = os.path.dirname(path_to_result)
-        if not os.path.isdir(dir_to_result):
-            exit('Пусть к файлу рузельтата задан не верно')
+    if dir_to_result and not os.path.isdir(dir_to_result):
+        exit('Путь к директории результата задан не верно')
 
 
-def get_cons_params():
+def get_params():
     parser = argparse.ArgumentParser(description='Resize image')
     parser.add_argument('path_file', help='Path to the image file')
     parser.add_argument('--width', type=int, help='Width new image')
     parser.add_argument('--height', type=int, help='Height new image')
     parser.add_argument('--scale', type=float, help='Image resizing factor')
-    parser.add_argument('--output', type=str,  help='Image resizing factor')
+    parser.add_argument(
+        '--output', type=str,
+        help='Path to the output file directory'
+    )
     return parser.parse_args()
 
 
 def main():
-    params = get_cons_params()
+
+    delta = 0.001
+
+    params = get_params()
     path_to_original = params.path_file
-    path_to_result = params.output
+    dir_to_result = params.output
     width = params.width
     height = params.height
     scale = params.scale
-    check_validity_params(path_to_result, width, height, scale)
 
-    try:
-        proportions_saved = resize_image(path_to_original, path_to_result,
-                                         width, height, scale)
-    except OSError:
-        print('Файл не является картинкой')
+    check_validity_params(dir_to_result, width, height, scale)
 
-    if not proportions_saved:
+    original_image = open_image(path_to_original)
+    result_image = resize_image(original_image, width, height, scale)
+
+    width_result, height_result = result_image.size
+
+    path_to_result = get_path_to_result(path_to_original, dir_to_result,
+                                        width_result, height_result)
+
+    save_image(result_image, path_to_result)
+
+    print('Измененное изображение {}'.format(path_to_result))
+
+    width_original, height_original = original_image.size
+
+    if not compare_images_proportions(width_original, height_original,
+                                      width_result, height_result, delta):
         print('Пропорции изображения изменены')
 
 

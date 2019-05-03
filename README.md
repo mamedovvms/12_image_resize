@@ -24,7 +24,7 @@
 Если исходный файл называется pic.jpg (100x200), то после вызова python image_resize.py --scale 2 pic.jpg должен появиться файл pic__200x400.jpg.
 ```
 Параметр ```scale > 0``` . Если параметр меньше 1, то размер изображения уменьшится.  
-#Примерые
+#Примеры
 ```bash
 $ python image_resize.py temp.jpg --width 100 --height 50
 Пропорции не сохранены
@@ -40,11 +40,6 @@ $ python image_resize.py temp.jpg  --scale 0.5
 #temp__270x270.jpg
 ```
 
+#Цель проекта
 
-
-
-
-# Project Goals
-
-The code is written for educational purposes. Training course for web-developers - [DEVMAN.org](https://devman.org)
-
+Код написан для образовательных целей. Учебный курс для веб-разработчиков - [DEVMAN.org] (https://devman.org)
