@@ -26,11 +26,7 @@ def open_image(path_to_original):
 
 
 def save_image(result_image, path_to_result):
-
-    try:
-        result_image.save(path_to_result)
-    except:
-        exit('Не удалось записать файл')
+    result_image.save(path_to_result)
 
 
 def get_ration_changes(original_size, new_size):
@@ -68,7 +64,7 @@ def compare_images_proportions(width_one, height_one, width_two,
 
 def check_validity_params(dir_to_result, width, height, scale):
 
-    if not all(value > 0 for value in [width, height, scale] if value):
+    if not all(param > 0 for param in [width, height, scale] if param):
         exit('Параметр не может быть отрицательным числом')
 
     if scale and (width or height):
