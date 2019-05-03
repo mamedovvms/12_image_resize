@@ -18,10 +18,12 @@ def get_path_to_result(path_to_original, dir_to_result, width, height):
 
 
 def open_image(path_to_original):
+
     try:
         original_image = Image.open(path_to_original)
     except OSError:
-        exit('Не удалось открыть файл')
+        return False
+
     return original_image
 
 
@@ -105,6 +107,9 @@ def main():
     check_validity_params(dir_to_result, width, height, scale)
 
     original_image = open_image(path_to_original)
+    if not original_image:
+        exit('Ошибка открытия файла изображения')
+
     result_image = resize_image(original_image, width, height, scale)
 
     width_result, height_result = result_image.size
