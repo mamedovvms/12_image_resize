@@ -28,7 +28,11 @@ def open_image(path_to_original):
 
 
 def save_image(result_image, path_to_result):
-    result_image.save(path_to_result)
+    try:
+        result_image.save(path_to_result)
+    except PermissionError:
+        return False
+    return True
 
 
 def get_ration_changes(original_size, new_size):
@@ -67,18 +71,19 @@ def compare_images_proportions(width_one, height_one, width_two,
 def check_validity_params(dir_to_result, width, height, scale):
 
     if not all(param > 0 for param in [width, height, scale] if param):
-        exit('Параметр не может быть отрицательным числом')
+        return False, 'Параметр не может быть отрицательным числом'
 
     if scale and (width or height):
-        exit('Параметры ширина и высота не задаются с параметром масштаб')
+        return False, 'Параметры ширина и высота не задаются с параметром масштаб'
 
     if not (scale or width or height):
-        exit('Не заполнен не один из параметров для '
-             'изменения размера изображения')
+        return False, 'Не заполнен не один из параметров для ' \
+                      'изменения размера изображения'
 
     if dir_to_result and not os.path.isdir(dir_to_result):
-        exit('Путь к директории результата задан не верно')
+        return False, 'Путь к директории результата задан не верно'
 
+    return True, None
 
 def get_params():
     parser = argparse.ArgumentParser(description='Resize image')
@@ -104,7 +109,9 @@ def main():
     height = params.height
     scale = params.scale
 
-    check_validity_params(dir_to_result, width, height, scale)
+    check_passed, error = check_validity_params(dir_to_result, width, height, scale)
+    if not check_passed:
+        exit(error)
 
     original_image = open_image(path_to_original)
     if not original_image:
@@ -117,7 +124,8 @@ def main():
     path_to_result = get_path_to_result(path_to_original, dir_to_result,
                                         width_result, height_result)
 
-    save_image(result_image, path_to_result)
+    if not save_image(result_image, path_to_result):
+        exit('Не удалось записать файл')
 
     print('Измененное изображение {}'.format(path_to_result))
 
