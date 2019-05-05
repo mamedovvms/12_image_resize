@@ -60,12 +60,9 @@ def resize_image(original_image, width=None, height=None, scale=None):
     return original_image.resize(new_size)
 
 
-def compare_images_proportions(width_one, height_one, width_two,
+def is_are_ratios_equal(width_one, height_one, width_two,
                                height_two, delta):
-    if abs(width_one/height_one - width_two/height_two) <= delta:
-        return True
-    else:
-        return False
+    return abs(width_one/height_one - width_two/height_two) <= delta
 
 
 def check_validity_params(dir_to_result, width, height, scale):
@@ -131,7 +128,7 @@ def main():
 
     width_original, height_original = original_image.size
 
-    if not compare_images_proportions(width_original, height_original,
+    if not is_are_ratios_equal(width_original, height_original,
                                       width_result, height_result, delta):
         print('Пропорции изображения изменены')
 
