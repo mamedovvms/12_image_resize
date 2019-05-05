@@ -60,7 +60,7 @@ def resize_image(original_image, width=None, height=None, scale=None):
     return original_image.resize(new_size)
 
 
-def is_are_ratios_equal(width_one, height_one, width_two,
+def is_ratios_equal(width_one, height_one, width_two,
                                height_two, delta):
     return abs(width_one/height_one - width_two/height_two) <= delta
 
@@ -82,7 +82,7 @@ def check_validity_params(dir_to_result, width, height, scale):
 
     return True, None
 
-def get_params():
+def get_parser():
     parser = argparse.ArgumentParser(description='Resize image')
     parser.add_argument('path_file', help='Path to the image file')
     parser.add_argument('--width', type=int, help='Width new image')
@@ -92,14 +92,14 @@ def get_params():
         '--output', type=str,
         help='Path to the output file directory'
     )
-    return parser.parse_args()
+    return parser
 
 
 def main():
 
     delta = 0.001
-
-    params = get_params()
+    parser = get_parser()
+    params = parser.pase_args()
     path_to_original = params.path_file
     dir_to_result = params.output
     width = params.width
@@ -108,7 +108,7 @@ def main():
 
     check_passed, error = check_validity_params(dir_to_result, width, height, scale)
     if not check_passed:
-        exit(error)
+        parser.error(error)
 
     original_image = open_image(path_to_original)
     if not original_image:
@@ -128,7 +128,7 @@ def main():
 
     width_original, height_original = original_image.size
 
-    if not is_are_ratios_equal(width_original, height_original,
+    if not is_ratios_equal(width_original, height_original,
                                       width_result, height_result, delta):
         print('Пропорции изображения изменены')
 

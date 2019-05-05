@@ -28,16 +28,13 @@
 ```bash
 $ python image_resize.py temp.jpg --width 100 --height 50
 Пропорции не сохранены
-
-#temp__100x50.jpg
+Измененное изображение temp__100x50.jpg
 
 $ python image_resize.py temp.jpg --width 100
-
-#temp__100x100.jpg
+Измененное изображение temp__100x100.jpg
 
 $ python image_resize.py temp.jpg  --scale 0.5
-
-#temp__270x270.jpg
+Измененное изображение temp__270x270.jpg
 ```
 
 #Цель проекта
